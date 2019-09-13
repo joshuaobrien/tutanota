@@ -146,8 +146,7 @@ class LanguageViewModel {
 		if (this.code === lang.code) {
 			return Promise.resolve()
 		}
-		return asyncImport(typeof module
-		!== "undefined" ? module.id : __moduleName, `${env.rootPathPrefix}src/translations/${lang.code}.js`)
+		return import(`../translations/${lang.code}.js`)
 			.then(translations => {
 				this.translations = translations
 				this.code = lang.code

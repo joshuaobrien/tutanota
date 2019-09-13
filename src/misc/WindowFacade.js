@@ -31,8 +31,7 @@ class WindowFacade {
 		this.windowCloseConfirmation = false
 		this._windowCloseListeners = new Set()
 		this.init()
-		asyncImport(typeof module !== "undefined" ? module.id : __moduleName,
-			`${env.rootPathPrefix}src/api/main/WorkerClient.js`)
+		import(`../api/main/WorkerClient.js`)
 			.then(module => {
 				// load async to reduce size of boot bundle
 				this._worker = module.worker

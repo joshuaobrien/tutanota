@@ -48,7 +48,7 @@ var ValueToFlowTypes = {
 	CompressedString: "string",
 }
 
-module.exports = {
+export default {
 	Type: Type,
 	Cardinality: Cardinality,
 	AssociationType: AssociationType,

@@ -4,7 +4,7 @@ import {NavBar} from "./NavBar"
 import type {NavButtonAttrs} from "./NavButtonN"
 import {NavButtonColors, NavButtonN} from "./NavButtonN"
 import {styles} from "../styles"
-import {asyncImport, neverNull} from "../../api/common/utils/Utils"
+import {neverNull} from "../../api/common/utils/Utils"
 import {keyManager, Keys} from "../../misc/KeyManager"
 import {lang} from "../../misc/LanguageViewModel"
 import {logins} from "../../api/main/LoginController"
@@ -16,7 +16,6 @@ import {BootIcons} from "./icons/BootIcons"
 import type {SearchBar} from "../../search/SearchBar"
 import type {MainLocatorType} from "../../api/main/MainLocator"
 import type {WorkerClient} from "../../api/main/WorkerClient";
-import type {SubscriptionTypeEnum} from "../../subscription/SubscriptionUtils"
 import {client} from "../../misc/ClientDetector"
 
 
@@ -168,14 +167,12 @@ class Header {
 			]))
 		}
 
-		asyncImport(typeof module !== "undefined" ?
-			module.id : __moduleName, `${env.rootPathPrefix}src/search/SearchBar.js`)
+		import(`../../search/SearchBar.js`)
 			.then((searchBarModule) => {
 				this.searchBar = new searchBarModule.SearchBar()
 			})
 
-		asyncImport(typeof module !== "undefined" ?
-			module.id : __moduleName, `${env.rootPathPrefix}src/api/main/WorkerClient.js`)
+		import(`../../api/main/WorkerClient.js`)
 			.then(workerClientModule => {
 				(workerClientModule.worker: WorkerClient).wsConnection().map(state => {
 					this._wsState = state
@@ -230,25 +227,20 @@ class Header {
 	}
 
 	_showUpgradeDialog() {
-		asyncImport(typeof module !== "undefined" ?
-			module.id : __moduleName, `${env.rootPathPrefix}src/subscription/UpgradeSubscriptionWizard.js`)
+		import(`../../subscription/UpgradeSubscriptionWizard.js`)
 			.then(upgradeWizard => {
-					// To not import constant
-					let subscriptionType: SubscriptionTypeEnum = 'Free'
-					return upgradeWizard.showUpgradeWizard(subscriptionType)
+					return upgradeWizard.showUpgradeWizard()
 				}
 			)
 	}
 
 	_writeSupportMail() {
-		asyncImport(typeof module !== "undefined" ?
-			module.id : __moduleName, `${env.rootPathPrefix}src/mail/MailEditor.js`)
+		import(`../../mail/MailEditor.js`)
 			.then(mailEditorModule => mailEditorModule.MailEditor.writeSupportMail())
 	}
 
 	_writeInviteMail() {
-		asyncImport(typeof module !== "undefined" ?
-			module.id : __moduleName, `${env.rootPathPrefix}src/mail/MailEditor.js`)
+		import(`../../mail/MailEditor.js`)
 			.then(mailEditorModule => mailEditorModule.MailEditor.writeInviteMail())
 	}
 

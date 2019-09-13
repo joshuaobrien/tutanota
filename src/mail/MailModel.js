@@ -1,11 +1,11 @@
 //@flow
 import m from "mithril"
 import stream from "mithril/stream/stream.js"
-import {containsEventOfType, neverNull} from "../api/common/utils/Utils"
+import {containsEventOfType, neverNull, noOp} from "../api/common/utils/Utils"
 import {createMoveMailData} from "../api/entities/tutanota/MoveMailData"
 import {load, loadAll, serviceRequestVoid} from "../api/main/Entity"
 import {TutanotaService} from "../api/entities/tutanota/Services"
-import {HttpMethod, isSameId} from "../api/common/EntityFunctions"
+import {elementIdPart, HttpMethod, isSameId, listIdPart} from "../api/common/EntityFunctions"
 import {PreconditionFailedError} from "../api/common/error/RestError"
 import {Dialog} from "../gui/base/Dialog"
 import {logins} from "../api/main/LoginController"
@@ -17,7 +17,6 @@ import {GroupInfoTypeRef} from "../api/entities/sys/GroupInfo"
 import {GroupTypeRef} from "../api/entities/sys/Group"
 import {MailFolderTypeRef} from "../api/entities/tutanota/MailFolder"
 import {FeatureType, GroupType, MailFolderType, OperationType} from "../api/common/TutanotaConstants"
-import {module as replaced} from "@hot"
 import {UserTypeRef} from "../api/entities/sys/User"
 import {locator} from "../api/main/MainLocator"
 import {MailTypeRef} from "../api/entities/tutanota/Mail"
@@ -27,8 +26,6 @@ import {lang} from "../misc/LanguageViewModel"
 import {Notifications} from "../gui/Notifications"
 import {ProgrammingError} from "../api/common/error/ProgrammingError"
 import {findAndApplyMatchingRule} from "./InboxRuleHandler"
-import {noOp} from "../api/common/utils/Utils"
-import {elementIdPart, listIdPart} from "../api/common/EntityFunctions"
 
 export type MailboxDetail = {
 	mailbox: MailBox,
@@ -257,9 +254,9 @@ export class MailModel {
 
 export const mailModel = new MailModel(new Notifications(), locator.eventController)
 
-if (replaced) {
-	Object.assign(mailModel, replaced.mailModel)
-}
+// if (replaced) {
+// 	Object.assign(mailModel, replaced.mailModel)
+// }
 
 
 

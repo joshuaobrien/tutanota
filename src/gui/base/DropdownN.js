@@ -324,8 +324,7 @@ export function createAsyncDropdown(lazyButtons: lazyAsync<$ReadOnlyArray<DropDo
 	return ((e, dom) => {
 		let buttonPromise = lazyButtons()
 		if (!buttonPromise.isFulfilled()) {
-			buttonPromise = asyncImport(typeof module !== "undefined" ? module.id : __moduleName,
-				`${env.rootPathPrefix}src/gui/base/ProgressDialog.js`)
+			buttonPromise = import(`./ProgressDialog.js`)
 				.then(module => {
 					return module.showProgressDialog("loading_msg", buttonPromise)
 				})

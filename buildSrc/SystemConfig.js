@@ -9,7 +9,7 @@ const baseDependencies = [
 ]
 
 const baseDevDependencies = baseDependencies
-	.concat(["libs/system.src.js"])
+	.concat(["libs/system.js"])
 const baseProdDependencies = baseDependencies
 	.concat(["libs/system-production.src.js"])
 	.map(relative => path.join(__dirname, '/..', relative).replace("/libs/", "/libs/minified/"))
@@ -23,9 +23,6 @@ const dependencyMap = {
 	"autolinker": "./libs/Autolinker.js",
 	"qrcode": "./libs/qrcode.js",
 	"luxon": "./libs/luxon.js",
-	"pako_inflate": "./libs/pako_inflate.js",
-	"@hot": "@empty", // see https://github.com/alexisvincent/systemjs-hot-reloader#usage
-	"util": "@empty" // used by ospec to provide debug output in node
 }
 
 const systemConfigTemplate = {

@@ -67,7 +67,7 @@ styles.registerStyle('main', () => {
 
 		"@font-face": {
 			"font-family": "'Ionicons'",
-			"src": `url('${System.getConfig().baseURL}images/ionicons.ttf') format('truetype')`,
+			"src": `url('images/ionicons.ttf') format('truetype')`,
 			"font-weight": "normal",
 			"font-style": "normal"
 		},

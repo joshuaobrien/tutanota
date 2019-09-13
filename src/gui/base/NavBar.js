@@ -5,7 +5,6 @@ import {assertMainOrNodeBoot, isAdminClient} from "../../api/Env"
 import {size} from "../size"
 import {styles} from "../styles"
 import type {SearchBar} from "../../search/SearchBar"
-import {asyncImport} from "../../api/common/utils/Utils"
 import {logins} from "../../api/main/LoginController"
 import type {MainLocatorType} from "../../api/main/MainLocator"
 import {lang} from "../../misc/LanguageViewModel"
@@ -72,8 +71,7 @@ export class NavBar {
 		}
 
 		if (!isAdminClient()) {
-			asyncImport(typeof module !== "undefined" ? module.id : __moduleName,
-				`${env.rootPathPrefix}src/search/SearchBar.js`)
+			import(`../../search/SearchBar.js`)
 				.then((searchBarModule) => {
 					this.searchBar = new searchBarModule.SearchBar()
 				})

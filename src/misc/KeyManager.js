@@ -109,8 +109,7 @@ class KeyManager {
 		let helpShortcut = {
 			key: Keys.F1,
 			exec: () => {
-				asyncImport(typeof module
-				!== "undefined" ? module.id : __moduleName, `${env.rootPathPrefix}src/gui/base/Dialog.js`)
+				import(`../gui/base/Dialog.js`)
 					.then(module => {
 						if (this._helpDialog && this._helpDialog.visible) {
 							return

@@ -5,11 +5,8 @@ import {hash} from "./Sha256"
 import {random} from "./Randomizer"
 import {CryptoError} from "../../common/error/CryptoError"
 import {assertWorkerOrNode, Mode} from "../../Env"
-import JSBN from "./lib/crypto-jsbn-2012-08-09_1"
+import {RSAKey, parseBigInt, BigInteger} from "./lib/crypto-jsbn-2012-08-09_1"
 import {rsaApp} from "../../../native/RsaApp" // importing with {} from CJS modules is not supported for dist-builds currently (must be a systemjs builder bug)
-const RSAKey = JSBN.RSAKey
-const parseBigInt = JSBN.parseBigInt
-const BigInteger = JSBN.BigInteger
 
 assertWorkerOrNode()
 

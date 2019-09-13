@@ -683,8 +683,7 @@ sjcl.codec.base32 = {
 				if (!_hex) {
 					try {
 						return sjcl.codec.base32hex.toBits(str);
-					}
-					catch (e) {
+					} catch (e) {
 					}
 				}
 				throw new sjcl.exception.invalid("this isn't " + format + "!");
@@ -2162,7 +2161,7 @@ sjcl.prng.prototype = {
 		}
 		this._robins[source] = (this._robins[source] + 1) % this._pools.length;
 
-		switch (typeof(data)) {
+		switch (typeof (data)) {
 
 			case "number":
 				if (estimatedEntropy === undefined) {
@@ -2184,7 +2183,7 @@ sjcl.prng.prototype = {
 						err = 1;
 					}
 					for (i = 0; i < data.length && !err; i++) {
-						if (typeof(data[i]) !== "number") {
+						if (typeof (data[i]) !== "number") {
 							err = 1;
 						}
 					}
@@ -2568,7 +2567,7 @@ sjcl.random = new sjcl.prng(6);
  */
 
 //patch arraybuffers if they don't exist
-if (typeof(ArrayBuffer) === 'undefined') {
+if (typeof (ArrayBuffer) === 'undefined') {
 	(function (globals) {
 		"use strict";
 		globals.ArrayBuffer = function () {
@@ -2682,11 +2681,4 @@ sjcl.codec.arrayBuffer = {
 	}
 };
 
-if (typeof module !== 'undefined' && module.exports) {
-	module.exports = sjcl;
-}
-if (typeof define === "function") {
-	define([], function () {
-		return sjcl;
-	});
-}
+export default sjcl

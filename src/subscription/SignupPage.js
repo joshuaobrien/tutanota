@@ -18,7 +18,7 @@ import {AccountType, TUTANOTA_MAIL_ADDRESS_DOMAINS} from "../api/common/Tutanota
 import {SysService} from "../api/entities/sys/Services"
 import {worker} from "../api/main/WorkerClient"
 import {AccessDeactivatedError, AccessExpiredError, InvalidDataError} from "../api/common/error/RestError"
-import {asyncImport, neverNull} from "../api/common/utils/Utils"
+import {neverNull} from "../api/common/utils/Utils"
 import {htmlSanitizer} from "../misc/HtmlSanitizer"
 import {HttpMethod} from "../api/common/EntityFunctions"
 import {serviceRequest, serviceRequestVoid} from "../api/main/Entity"
@@ -239,7 +239,8 @@ export class SignupPage implements WizardPage<UpgradeSubscriptionData> {
 							right: [{label: "ok_action", click: okAction, type: ButtonType.Primary}],
 							middle: () => lang.get("captchaDisplay_label")
 						}
-						let captchaInput = new TextField(() => lang.get("captchaInput_label") + ' (hh:mm)', () => lang.get("captchaInfo_msg"))
+						let captchaInput = new TextField(() => lang.get("captchaInput_label")
+							+ ' (hh:mm)', () => lang.get("captchaInfo_msg"))
 						dialog = new Dialog(DialogType.EditSmall, {
 							view: (): Children => [
 								m(".dialog-header.plr-l", m(DialogHeaderBar, actionBarAttrs)),
@@ -270,8 +271,7 @@ export class SignupPage implements WizardPage<UpgradeSubscriptionData> {
 
 
 	showTerms(section: string) {
-		asyncImport(typeof module !== "undefined"
-			? module.id : __moduleName, `${env.rootPathPrefix}src/subscription/terms.js`)
+		import(`./terms.js`)
 			.then(terms => {
 				let dialog: Dialog
 				let visibleLang = lang.code

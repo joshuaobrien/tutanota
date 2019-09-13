@@ -5,7 +5,6 @@ import {logins} from "../api/main/LoginController"
 import {GroupInfoTypeRef} from "../api/entities/sys/GroupInfo"
 import {GroupType} from "../api/common/TutanotaConstants"
 import {locator} from "../api/main/MainLocator"
-import {module as replaced} from "@hot"
 import type {EntityUpdateData} from "../api/main/EventController"
 import {isUpdateForTypeRef} from "../api/main/EventController"
 
@@ -52,7 +51,7 @@ class LocalAdminGroupInfoModel {
 
 export const localAdminGroupInfoModel = new LocalAdminGroupInfoModel()
 
-if (replaced) {
-	Object.assign(localAdminGroupInfoModel, replaced.localAdminGroupInfoModel)
-}
+// if (replaced) {
+// 	Object.assign(localAdminGroupInfoModel, replaced.localAdminGroupInfoModel)
+// }
 

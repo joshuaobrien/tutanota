@@ -12,10 +12,9 @@ import {InfoView} from "./gui/base/InfoView"
 import {Button, ButtonType} from "./gui/base/Button"
 import {header} from "./gui/base/Header"
 import {assertMainOrNodeBoot, bootFinished, isApp} from "./api/Env"
-import deletedModule from "@hot"
 import {keyManager} from "./misc/KeyManager"
 import {logins} from "./api/main/LoginController"
-import {asyncImport, neverNull} from "./api/common/utils/Utils"
+import {neverNull} from "./api/common/utils/Utils"
 import {themeId} from "./gui/theme"
 import {routeChange} from "./misc/RouteChange"
 import {windowFacade} from "./misc/WindowFacade"
@@ -53,22 +52,18 @@ window.tutao = {
 	locator: window.tutao ? window.tutao.locator : null // locator is not restored on hot reload otherwise
 }
 
-function _asyncImport(path: string) {
-	return asyncImport(typeof module !== "undefined" ? module.id : __moduleName, `${env.rootPathPrefix}${path}`)
-}
-
-
 client.init(navigator.userAgent, navigator.platform)
 
-_asyncImport("src/serviceworker/ServiceWorkerClient.js").then((swModule) => swModule.init())
+import("./serviceworker/ServiceWorkerClient").then((swModule) => swModule.init())
 if (client.isIE()) {
-	_asyncImport("src/gui/base/NotificationOverlay.js").then((module) => module.show({
+	import("./gui/base/NotificationOverlay.js").then((module) => module.show({
 		view: () => m("", lang.get("unsupportedBrowserOverlay_msg"))
 	}, "close_alt", []))
 }
 
-export const state: {prefix: ?string} = (deletedModule && deletedModule.module)
-	? deletedModule.module.state : {prefix: null}
+// export const state: {prefix: ?string} = (deletedModule && deletedModule.module)
+// 	? deletedModule.module.state : {prefix: null}
+export const state: {prefix: ?string} = {prefix: null}
 
 let origin = location.origin
 if (location.origin.indexOf("localhost") !== -1) {
@@ -162,21 +157,21 @@ let initialized = lang.init(en).then(() => {
 		}
 	}
 
-	let mailViewResolver = createViewResolver(() => _asyncImport("src/mail/MailView.js")
+	let mailViewResolver = createViewResolver(() => import("./mail/MailView.js")
 		.then(module => new module.MailView()))
-	let contactViewResolver = createViewResolver(() => _asyncImport("src/contacts/ContactView.js")
+	let contactViewResolver = createViewResolver(() => import("./contacts/ContactView.js")
 		.then(module => new module.ContactView()))
-	let externalLoginViewResolver = createViewResolver(() => _asyncImport("src/login/ExternalLoginView.js")
+	let externalLoginViewResolver = createViewResolver(() => import("./login/ExternalLoginView.js")
 		.then(module => new module.ExternalLoginView()), false)
-	let loginViewResolver = createViewResolver(() => _asyncImport("src/login/LoginView.js")
+	let loginViewResolver = createViewResolver(() => import("./login/LoginView.js")
 		.then(module => module.login), false)
-	let settingsViewResolver = createViewResolver(() => _asyncImport("src/settings/SettingsView.js")
+	let settingsViewResolver = createViewResolver(() => import("./settings/SettingsView.js")
 		.then(module => new module.SettingsView()))
-	let searchViewResolver = createViewResolver(() => _asyncImport("src/search/SearchView.js")
+	let searchViewResolver = createViewResolver(() => import("./search/SearchView.js")
 		.then(module => new module.SearchView()))
-	let contactFormViewResolver = createViewResolver(() => _asyncImport("src/login/ContactFormView.js")
+	let contactFormViewResolver = createViewResolver(() => import("./login/ContactFormView.js")
 		.then(module => module.contactFormView), false)
-	const calendarViewResolver = createViewResolver(() => _asyncImport("src/calendar/CalendarView.js")
+	const calendarViewResolver = createViewResolver(() => import("./calendar/CalendarView.js")
 		.then(module => new module.CalendarView()), true)
 
 	let start = "/"
@@ -240,10 +235,10 @@ let initialized = lang.init(en).then(() => {
 		}
 	})
 
-	const workerPromise = _asyncImport("src/api/main/WorkerClient.js")
+	const workerPromise = import("./api/main/WorkerClient.js")
 		.then(module => module.worker)
 	workerPromise.then(() => {
-		_asyncImport("src/gui/InfoMessageHandler.js")
+		import("./gui/InfoMessageHandler.js")
 	})
 
 

@@ -86,8 +86,7 @@ export class LoginView {
 		this._knownCredentials = []
 		this._isDeleteCredentials = false;
 
-		this._viewController = asyncImport(typeof module !== "undefined" ? module.id : __moduleName,
-			`${env.rootPathPrefix}src/login/LoginViewController.js`)
+		this._viewController = import(`../login/LoginViewController.js`)
 			.then(module => new module.LoginViewController(this))
 
 		if (window.location.href.includes('signup')) {

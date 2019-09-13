@@ -1,7 +1,13 @@
 // @flow
-import {base64ToBase64Url, base64ToUint8Array, base64UrlToBase64, stringToUtf8Uint8Array, uint8ArrayToBase64, utf8Uint8ArrayToString} from "./utils/Encoding"
+import {
+	base64ToBase64Url,
+	base64ToUint8Array,
+	base64UrlToBase64,
+	stringToUtf8Uint8Array,
+	uint8ArrayToBase64,
+	utf8Uint8ArrayToString
+} from "./utils/Encoding"
 import EC from "./EntityConstants"
-import {asyncImport} from "./utils/Utils"
 import {last} from "./utils/ArrayUtils"
 
 const Type = EC.Type
@@ -69,13 +75,12 @@ export function isSameTypeRef(typeRef1: TypeRef<any>, typeRef2: TypeRef<any>): b
 }
 
 export function resolveTypeReference(typeRef: TypeRef<any>): Promise<TypeModel> {
-	let pathPrefix = env.rootPathPrefix
+	let pathPrefix = ""
 	if (env.adminTypes.indexOf(typeRef.app + "/" + typeRef.type) !== -1) {
 		pathPrefix = "admin/"
 	}
 
-	return asyncImport(typeof module !== "undefined" ? module.id : __moduleName,
-		`${pathPrefix}src/api/entities/${typeRef.app}/${typeRef.type}.js`)
+	return import(`${pathPrefix}src/api/entities/${typeRef.app}/${typeRef.type}.js`)
 		.then(module => {
 			return module._TypeModel
 		})
@@ -235,7 +240,10 @@ export function _loadReverseRangeBetween<T: ListElement>(typeRef: TypeRef<T>, li
 							return {elements: filteredEntities.concat(remainingEntities), loadedCompletely}
 						})
 				} else {
-					return {elements: filteredEntities, loadedCompletely: loadedReverseRangeCompletely(rangeItemLimit, loadedEntities, filteredEntities)}
+					return {
+						elements: filteredEntities,
+						loadedCompletely: loadedReverseRangeCompletely(rangeItemLimit, loadedEntities, filteredEntities)
+					}
 				}
 			})
 	})
@@ -355,7 +363,8 @@ export function getEtId(entity: Element): Id {
 
 export function getLetId(entity: ListElement): IdTuple {
 	if (typeof entity._id === "undefined") {
-		throw new Error("listId is not defined for " + (typeof (entity: any)._type === 'undefined' ? JSON.stringify(entity) : (entity: any)))
+		throw new Error("listId is not defined for " + (typeof (entity: any)._type
+		=== 'undefined' ? JSON.stringify(entity) : (entity: any)))
 	}
 	return entity._id
 }
