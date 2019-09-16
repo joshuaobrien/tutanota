@@ -20,7 +20,7 @@ export type AllIconsEnum = BootIconsEnum | IconsEnum
 export type lazyIcon = lazy<AllIconsEnum>;
 
 let IconsSvg = {}
-import(`./icons/Icons.js`).then(IconsModule => {
+import("./icons/Icons.js").then(IconsModule => {
 	IconsSvg = IconsModule.IconsSvg
 })
 

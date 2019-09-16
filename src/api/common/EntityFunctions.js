@@ -7,12 +7,12 @@ import {
 	uint8ArrayToBase64,
 	utf8Uint8ArrayToString
 } from "./utils/Encoding"
-import EC from "./EntityConstants"
+import {Cardinality, Type, ValueType} from "./EntityConstants"
 import {last} from "./utils/ArrayUtils"
+import sysModelMap from "../entities/sys/sysModelMap"
+import tutanotaModelMap from "../entities/tutanota/tutanotaModelMap"
+import monitorModelMap from "../entities/monitor/monitorModelMap"
 
-const Type = EC.Type
-const ValueType = EC.ValueType
-const Cardinality = EC.Cardinality
 
 export const HttpMethod = Object.freeze({
 	GET: 'GET',
@@ -74,13 +74,19 @@ export function isSameTypeRef(typeRef1: TypeRef<any>, typeRef2: TypeRef<any>): b
 	return isSameTypeRefByAttr(typeRef1, typeRef2.app, typeRef2.type)
 }
 
+const modelMaps = {"sys": sysModelMap, "tutanota": tutanotaModelMap, "monitor": monitorModelMap}
+
 export function resolveTypeReference(typeRef: TypeRef<any>): Promise<TypeModel> {
 	let pathPrefix = ""
 	if (env.adminTypes.indexOf(typeRef.app + "/" + typeRef.type) !== -1) {
 		pathPrefix = "admin/"
 	}
+	const modelMap = modelMaps[typeRef.app]
 
-	return import(`${pathPrefix}src/api/entities/${typeRef.app}/${typeRef.type}.js`)
+	if (modelMap[typeRef.type] == null) {
+		throw new Error("Cannot find TypeRef: " + String(typeRef))
+	}
+	return modelMap[typeRef.type]()
 		.then(module => {
 			return module._TypeModel
 		})

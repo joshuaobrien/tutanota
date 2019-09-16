@@ -11,7 +11,14 @@ import {getMailFolderType, MailFolderType, ReplyType} from "../api/common/Tutano
 import {MailView} from "./MailView"
 import {MailTypeRef} from "../api/entities/tutanota/Mail"
 import {assertMainOrNode} from "../api/Env"
-import {getArchiveFolder, getFolderName, getInboxFolder, getSenderOrRecipientHeading, isTutanotaTeamMail, showDeleteConfirmationDialog} from "./MailUtils"
+import {
+	getArchiveFolder,
+	getFolderName,
+	getInboxFolder,
+	getSenderOrRecipientHeading,
+	isTutanotaTeamMail,
+	showDeleteConfirmationDialog
+} from "./MailUtils"
 import {findAndApplyMatchingRule, isInboxList} from "./InboxRuleHandler"
 import {NotFoundError} from "../api/common/error/RestError"
 import {px, size} from "../gui/size"
@@ -46,7 +53,6 @@ export class MailListView implements Component {
 	listId: Id;
 	mailView: MailView;
 	list: List<Mail, MailRow>;
-	view: Function;
 
 	constructor(mailListId: Id, mailView: MailView) {
 		this.listId = mailListId

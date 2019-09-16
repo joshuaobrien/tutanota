@@ -37,17 +37,13 @@ import {INITIAL_MAIL_INDEX_INTERVAL_DAYS, MailIndexer} from "./MailIndexer"
 import {LoginFacade} from "../facades/LoginFacade"
 import {SuggestionFacade} from "./SuggestionFacade"
 import {load} from "../EntityWorker"
-import EC from "../../common/EntityConstants"
+import {AssociationType, Cardinality, ValueType} from "../../common/EntityConstants"
 import {NotAuthorizedError, NotFoundError} from "../../common/error/RestError"
 import {iterateBinaryBlocks} from "./SearchIndexEncoding"
 import {getDayShifted, getStartOfDay} from "../../common/utils/DateUtils"
 import type {PromiseMapFn} from "../../common/utils/PromiseUtils"
 import {promiseMapCompat} from "../../common/utils/PromiseUtils"
 import type {BrowserData} from "../../../misc/ClientConstants"
-
-const ValueType = EC.ValueType
-const Cardinality = EC.Cardinality
-const AssociationType = EC.AssociationType
 
 type RowsToReadForIndexKey = {indexKey: string, rows: Array<SearchIndexMetadataEntry>}
 
@@ -189,8 +185,10 @@ export class SearchFacade {
 					let words = tokenize(entity[attributeName])
 					return Promise.resolve(words.find(w => w.startsWith(suggestionToken)) != null)
 				}
-			} else if (model.associations[attributeName] && model.associations[attributeName].type === AssociationType.Aggregation && entity[attributeName]) {
-				let aggregates = (model.associations[attributeName].cardinality === Cardinality.Any) ? entity[attributeName] : [entity[attributeName]]
+			} else if (model.associations[attributeName] && model.associations[attributeName].type === AssociationType.Aggregation
+				&& entity[attributeName]) {
+				let aggregates = (model.associations[attributeName].cardinality
+					=== Cardinality.Any) ? entity[attributeName] : [entity[attributeName]]
 				return resolveTypeReference(new TypeRef(model.app, model.associations[attributeName].refType))
 					.then(refModel => {
 						return asyncFind(aggregates, aggregate => {

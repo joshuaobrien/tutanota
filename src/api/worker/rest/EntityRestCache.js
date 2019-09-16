@@ -18,7 +18,7 @@ import {clone, containsEventOfType, downcast, getEventOfType, neverNull} from ".
 import {PermissionTypeRef} from "../../entities/sys/Permission"
 import {EntityEventBatchTypeRef} from "../../entities/sys/EntityEventBatch"
 import {assertWorkerOrNode} from "../../Env"
-import EC from "../../common/EntityConstants"
+import {ValueType} from "../../common/EntityConstants"
 import {SessionTypeRef} from "../../entities/sys/Session"
 import {StatisticLogEntryTypeRef} from "../../entities/tutanota/StatisticLogEntry"
 import {BucketPermissionTypeRef} from "../../entities/sys/BucketPermission"
@@ -27,10 +27,10 @@ import {RecoverCodeTypeRef} from "../../entities/sys/RecoverCode"
 import {NotAuthorizedError, NotFoundError} from "../../common/error/RestError"
 import {MailTypeRef} from "../../entities/tutanota/Mail"
 
-const ValueType = EC.ValueType
-
 assertWorkerOrNode()
 
+
+// console.log("ha!")
 
 /**
  * This implementation provides a caching mechanism to the rest chain.
@@ -152,7 +152,8 @@ export class EntityRestCache implements EntityRestInterface {
 	isRangeRequest(listId: ?Id, id: ?Id, queryParameter: ?Params) {
 		// check for null and undefined because "" and 0 are als falsy
 		return listId && !id
-			&& queryParameter && queryParameter["start"] !== null && queryParameter["start"] !== undefined && queryParameter["count"] !== null
+			&& queryParameter && queryParameter["start"] !== null && queryParameter["start"] !== undefined && queryParameter["count"]
+			!== null
 			&& queryParameter["count"] !== undefined && queryParameter["reverse"]
 	}
 

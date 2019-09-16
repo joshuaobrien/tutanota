@@ -24,11 +24,8 @@ import {createVersionData} from "../entities/sys/VersionData"
 import {RootInstanceTypeRef} from "../entities/sys/RootInstance"
 import {VersionReturnTypeRef} from "../entities/sys/VersionReturn"
 import {assertMainOrNode} from "../Env"
-import EC from "../common/EntityConstants"
+import {Type, ValueType} from "../common/EntityConstants"
 import {downcast} from "../common/utils/Utils"
-
-const Type = EC.Type
-const ValueType = EC.ValueType
 
 assertMainOrNode()
 

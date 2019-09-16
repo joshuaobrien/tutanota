@@ -35,15 +35,11 @@ import {SessionKeyNotFoundError} from "../../common/error/SessionKeyNotFoundErro
 import {locator} from "../WorkerLocator"
 import {MailBodyTypeRef} from "../../entities/tutanota/MailBody"
 import {MailTypeRef} from "../../entities/tutanota/Mail"
-import EC from "../../common/EntityConstants" // importing with {} from CJS modules is not supported for dist-builds currently (must be a systemjs builder bug)
+import {AssociationType, Cardinality, Type, ValueType} from "../../common/EntityConstants"
 import {CryptoError} from "../../common/error/CryptoError"
 import {PushIdentifierTypeRef} from "../../entities/sys/PushIdentifier"
 import {uncompress} from "../lz4"
 
-const Type = EC.Type
-const ValueType = EC.ValueType
-const Cardinality = EC.Cardinality
-const AssociationType = EC.AssociationType
 
 assertWorkerOrNode()
 
