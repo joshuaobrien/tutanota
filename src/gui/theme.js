@@ -44,7 +44,7 @@ export type Theme = {
 	navigation_button_icon_selected: string,
 }
 
-export const themeId: Stream<ThemeId> = stream(getThemeId())
+export const themeId: Stream<ThemeId> = stream("light")//stream(getThemeId())
 let customTheme: ?Theme = null
 if (typeof whitelabelCustomizations !== "undefined" && whitelabelCustomizations && whitelabelCustomizations.theme) {
 	updateCustomTheme(whitelabelCustomizations.theme)

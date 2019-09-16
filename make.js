@@ -1,13 +1,23 @@
+const {Promise} = require("bluebird")
 const options = require('commander')
-const Promise = require('bluebird')
 const path = require("path")
-const fs = Promise.Promise.promisifyAll(require("fs-extra"))
+const fs = Promise.promisifyAll(require("fs-extra"))
 const env = require('./buildSrc/env.js')
 const LaunchHtml = require('./buildSrc/LaunchHtml.js')
 const SystemConfig = require('./buildSrc/SystemConfig.js')
 const os = require("os")
-const spawn = require('child_process').spawn
 const commonjs = require("rollup-plugin-commonjs")
+const {spawn} = require("child_process")
+const RollupConfig = require("./buildSrc/RollupConfig")
+
+let flow
+try {
+	flow = require('flow-bin')
+} catch (e) {
+	// we don't have flow on F-Droid
+	console.log("flow-bin not found, stubbing it")
+	flow = 'true'
+}
 // const desktopBuilder = require("./buildSrc/DesktopBuilder")
 
 const rollup = require("rollup")
@@ -53,7 +63,7 @@ async function prepareAssets(watch) {
 	let restUrl
 	await Promise.all([
 		fs.copyAsync(path.join(__dirname, '/resources/favicon'), path.join(__dirname, '/build/images')),
-		// fs.copyAsync(path.join(__dirname, '/resources/images/'), path.join(__dirname, '/build/images')),
+		fs.copyAsync(path.join(__dirname, '/resources/images/'), path.join(__dirname, '/build/images')),
 		fs.copyAsync(path.join(__dirname, '/libs'), path.join(__dirname, '/build/libs'))
 	])
 	if (options.stage === 'test') {
@@ -75,28 +85,19 @@ async function prepareAssets(watch) {
 	])
 }
 
+function startFlowCheck() {
+	spawn(flow, [], {stdio: [process.stdin, process.stdout, process.stderr]})
+}
+
 async function build(watch) {
+	startFlowCheck()
 	await prepareAssets(watch)
 
-	const inputOptions = {
-		input: ["src/app.js", "src/api/worker/WorkerImpl.js"],
+	const inputOptions = Object.assign({}, RollupConfig.input, {
 		treeshake: false, // disable tree-shaking for faster development builds
-		plugins: [
-			babel({
-				plugins: [
-					// Using Flow plugin and not preset to run before class-properties and avoid generating strange property code
-					"@babel/plugin-transform-flow-strip-types",
-					"@babel/plugin-proposal-class-properties",
-					"@babel/plugin-syntax-dynamic-import"
-				]
-			}),
-			resolveLibs(),
-			commonjs({
-				exclude: "src/**",
-			}),
-		],
-	}
-	const outputOptions = {format: "system", dir: "build", sourcemap: "inline"}
+		preserveModules: true,
+	})
+	const outputOptions = Object.assign({}, RollupConfig.output, {sourcemap: "inline"})
 
 	if (watch) {
 		const WebSocket = require("ws")
@@ -134,7 +135,6 @@ async function build(watch) {
 
 const packageJSON = require('./package.json')
 const version = packageJSON.version
-let start = new Date().getTime()
 
 options
 	.usage('[options] [test|prod|local|host <url>], "local" is default')
@@ -153,6 +153,11 @@ options
 		options.host = host
 	})
 	.parse(process.argv)
+
+if (options.clean) {
+	console.log("cleaning build dir")
+	fs.emptyDirAsync("build")
+}
 
 build(options.watch)
 

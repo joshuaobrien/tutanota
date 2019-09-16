@@ -25,7 +25,7 @@ self.onmessage = function (msg) {
 			       // }
 
 
-			       System.import('./WorkerImpl.js').then((workerModule) => {
+			       System.import('./api/worker/WorkerImpl.js').then((workerModule) => {
 				       const initialRandomizerEntropy = data.args[1]
 				       const browserData = data.args[2]
 				       if (initialRandomizerEntropy == null || browserData == null) {
