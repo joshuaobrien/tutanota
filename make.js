@@ -93,11 +93,26 @@ async function build(watch) {
 	startFlowCheck()
 	await prepareAssets(watch)
 
-	const inputOptions = Object.assign({}, RollupConfig.input, {
+	const inputOptions = {
+		input: ["src/app.js", "src/api/worker/WorkerImpl.js"],
+		plugins: [
+			babel({
+				plugins: [
+					// Using Flow plugin and not preset to run before class-properties and avoid generating strange property code
+					"@babel/plugin-transform-flow-strip-types",
+					"@babel/plugin-proposal-class-properties",
+					"@babel/plugin-syntax-dynamic-import"
+				]
+			}),
+			resolveLibs(),
+			commonjs({
+				exclude: "src/**",
+			}),
+		],
 		treeshake: false, // disable tree-shaking for faster development builds
 		preserveModules: true,
-	})
-	const outputOptions = Object.assign({}, RollupConfig.output, {sourcemap: "inline"})
+	}
+	const outputOptions = Object.assign({}, RollupConfig.output, {sourcemap: "inline", dir: "build"})
 
 	if (watch) {
 		const WebSocket = require("ws")

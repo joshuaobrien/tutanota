@@ -1,5 +1,6 @@
 "use strict"
 const options = require('commander')
+
 const Promise = require('bluebird')
 const fs = Promise.promisifyAll(require("fs-extra"))
 let version = require('./package.json').version
@@ -7,14 +8,19 @@ const env = require('./buildSrc/env.js')
 const LaunchHtml = require('./buildSrc/LaunchHtml.js')
 const spawnSync = require('child_process').spawnSync
 const desktopSigner = require('./buildSrc/installerSigner.js')
-
 const glob = require('glob')
+
 const path = require("path")
 const os = require("os")
-
 const SystemConfig = require('./buildSrc/SystemConfig.js')
+
 const rollup = require("rollup")
 const RollupConfig = require("./buildSrc/RollupConfig")
+const {terser} = require("rollup-plugin-terser")
+const babel = require("rollup-plugin-babel")
+const {resolveLibs} = require("./buildSrc/RollupConfig")
+const commonjs = require("rollup-plugin-commonjs")
+const analyze = require('rollup-plugin-analyzer')
 
 let start = Date.now()
 
@@ -22,20 +28,6 @@ const DistDir = 'build/dist'
 
 let bundles = {}
 const bundlesCache = "build/bundles.json"
-
-
-function getAsyncImports(file) {
-	let appSrc = fs.readFileSync(path.resolve(__dirname, file), 'utf-8')
-	const regExp = /_asyncImport\(["|'](.*?)["|']\)/g
-	let match = regExp.exec(appSrc)
-	let asyncImports = []
-	while (match != null) {
-		asyncImports.push(match[1])
-		match = regExp.exec(appSrc)
-	}
-	//console.log(`async imports for ${file}: ${asyncImports.join(" + ")}`)
-	return asyncImports
-}
 
 const distLoc = (filename) => `${DistDir}/${filename}`
 
@@ -90,9 +82,9 @@ function measure() {
 	return (Date.now() - start) / 1000
 }
 
-function clean() {
-	return fs.emptyDirAsync("build")
-	         .then(() => fs.ensureDirAsync(DistDir + "/translations"))
+async function clean() {
+	await fs.emptyDirAsync("build")
+	await fs.ensureDirAsync(DistDir + "/translations")
 }
 
 async function buildWebapp() {
@@ -105,18 +97,55 @@ async function buildWebapp() {
 	console.log("started cleaning", measure())
 	await clean()
 	console.log("started copying images", measure())
-	fs.copyAsync(path.join(__dirname, '/resources/favicon'), path.join(__dirname, '/build/dist/images'))
 	await fs.copyAsync(path.join(__dirname, '/resources/images'), path.join(__dirname, '/build/dist/images'))
 	const bootstrap = await fs.readFileAsync('src/api/worker/WorkerBootstrap.js', 'utf-8')
 	let lines = bootstrap.split("\n")
 	lines[0] = `importScripts('libs.js')`
 	// let code = babelCompile(lines.join("\n")).code
-	await fs.writeFileAsync('build/dist/WorkerBootstrap.js', lines.join["\n"], 'utf-8')
+	await fs.writeFileAsync('build/dist/WorkerBootstrap.js', lines.join("\n"), 'utf-8')
 
-	const bundle = await rollup.rollup(Object.assign({}, RollupConfig.input))
-	await bundle.write(Object.assign({}, RollupConfig.output))
+	console.log("stared bundling")
+	const bundle = await rollup.rollup({
+		input: ["src/app.js", "src/api/worker/WorkerImpl.js"],
+		plugins: [
+			analyze({summaryOnly: false, limit: 10, hideDeps: true}),
+			babel({
+				plugins: [
+					// Using Flow plugin and not preset to run before class-properties and avoid generating strange property code
+					"@babel/plugin-transform-flow-strip-types",
+					"@babel/plugin-proposal-class-properties",
+					"@babel/plugin-syntax-dynamic-import",
+					"@babel/plugin-transform-arrow-functions",
+					"@babel/plugin-transform-classes",
+					"@babel/plugin-transform-computed-properties",
+					"@babel/plugin-transform-destructuring",
+					"@babel/plugin-transform-for-of",
+					"@babel/plugin-transform-parameters",
+					"@babel/plugin-transform-shorthand-properties",
+					"@babel/plugin-transform-spread",
+					"@babel/plugin-transform-template-literals",
+				]
+			}),
+			resolveLibs(),
+			commonjs({
+				exclude: "src/**",
+			}),
+			terser(),
+		],
+		experimentalOptimizeChunks: true,
+		chunkGroupingSize: 20000,
+		perf: true,
+	})
+	console.log("bundling timings: ")
+	for (let [k, v] of Object.entries(bundle.getTimings())) {
+		console.log(k, v[0])
+	}
+	console.log("started writing bundles")
+	await bundle.write(Object.assign({}, RollupConfig.output, {sourcemap: true, dir: "build/dist"}))
+
+
 	console.log("creating language bundles")
-	await createLanguageBundles(bundles)
+	// await createLanguageBundles(bundles)
 	let restUrl
 	if (options.stage === 'test') {
 		restUrl = 'https://test.tutanota.com'
@@ -138,6 +167,7 @@ async function buildWebapp() {
 			? createHtml(env.create(SystemConfig.distRuntimeConfig(bundles), restUrl, version, "App", true), bundles)
 			: null,
 	])
+	await copyDependencies()
 
 	// return Promise.resolve()
 	//               .then(() => console.log("started cleaning", measure()))
@@ -245,17 +275,6 @@ const buildConfig = {
 	sourceMapContents: true
 }
 
-function bundle(src, targetFile, bundles) {
-	return builder.bundle(src, targetFile, buildConfig).then(function (output) {
-		bundles[path.basename(targetFile)] = output.modules.sort()
-		console.log(`  > bundled ${targetFile}`);
-		return bundles
-	}).catch(function (err) {
-		console.log('Build error in bundle ' + targetFile);
-		throw err
-	})
-}
-
 function bundleServiceWorker(bundles) {
 	return fs.readFileAsync("src/serviceworker/sw.js", "utf8").then((content) => {
 		const filesToCache = ["index.js", "WorkerBootstrap.js", "index.html", "libs.js"]
@@ -274,7 +293,7 @@ function bundleServiceWorker(bundles) {
 
 function copyDependencies() {
 	let libs = SystemConfig.baseProdDependencies.map(file => fs.readFileSync(file, 'utf-8')).join("\n")
-	return fs.writeFileSync('build/dist/libs.js', libs, 'utf-8')
+	return fs.writeFileAsync('build/dist/libs.js', libs, 'utf-8')
 }
 
 function createHtml(env) {
@@ -294,32 +313,31 @@ function createHtml(env) {
 		_writeFile(`./build/dist/${filenamePrefix}.js`, [
 			`window.whitelabelCustomizations = null`,
 			`window.env = ${JSON.stringify(env, null, 2)}`,
-			`System.config(env.systemConfig)`,
-			`System.import("src/system-resolve.js").then(function() { System.import('src/app.js') })`,
+			`System.import('app.js')`,
 		].join("\n")),
 		LaunchHtml.renderHtml(imports, env).then((content) => _writeFile(`./build/dist/${filenamePrefix}.html`, content))
 	])
 }
 
-function createLanguageBundles(bundles) {
-	const languageFiles = options.stage === 'release' || options.stage === 'prod'
-		? glob.sync('src/translations/*.js')
-		: ['src/translations/en.js', 'src/translations/de.js', 'src/translations/de_sie.js', 'src/translations/ru.js']
-	return Promise.all(languageFiles.map(translation => {
-		let filename = path.basename(translation)
-		return builder.bundle(translation, {
-			minify: false,
-			mangle: false,
-			runtime: false,
-			sourceMaps: false
-		}).then(function (output) {
-			const bundle = `${DistDir}/translations/${filename}`
-			bundles["translations/" + filename] = output.modules.sort()
-			fs.writeFileSync(bundle, output.source, 'utf-8')
-			console.log(`  > bundled ${bundle}`);
-		})
-	})).then(() => bundles)
-}
+// function createLanguageBundles(bundles) {
+// 	const languageFiles = options.stage === 'release' || options.stage === 'prod'
+// 		? glob.sync('src/translations/*.js')
+// 		: ['src/translations/en.js', 'src/translations/de.js', 'src/translations/de_sie.js', 'src/translations/ru.js']
+// 	return Promise.all(languageFiles.map(translation => {
+// 		let filename = path.basename(translation)
+// 		return builder.bundle(translation, {
+// 			minify: false,
+// 			mangle: false,
+// 			runtime: false,
+// 			sourceMaps: false
+// 		}).then(function (output) {
+// 			const bundle = `${DistDir}/translations/${filename}`
+// 			bundles["translations/" + filename] = output.modules.sort()
+// 			fs.writeFileSync(bundle, output.source, 'utf-8')
+// 			console.log(`  > bundled ${bundle}`);
+// 		})
+// 	})).then(() => bundles)
+// }
 
 function _writeFile(targetFile, content) {
 	return fs.mkdirsAsync(path.dirname(targetFile)).then(() => fs.writeFileAsync(targetFile, content, 'utf-8'))

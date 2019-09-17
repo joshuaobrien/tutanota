@@ -11,8 +11,8 @@ const baseDependencies = [
 const baseDevDependencies = baseDependencies
 	.concat(["libs/system.js"])
 const baseProdDependencies = baseDependencies
-	.concat(["libs/system-production.src.js"])
-	.map(relative => path.join(__dirname, '/..', relative).replace("/libs/", "/libs/minified/"))
+	.concat(["libs/s.js"])
+	.map(relative => path.join(__dirname, '/..', relative))
 
 const dependencyMap = {
 	"mithril": "./libs/mithril.js",
