@@ -108,7 +108,7 @@ async function buildWebapp() {
 	const bundle = await rollup.rollup({
 		input: ["src/app.js", "src/api/worker/WorkerImpl.js"],
 		plugins: [
-			analyze({summaryOnly: false, limit: 10, hideDeps: true}),
+			analyze({limit: 10, hideDeps: true}),
 			babel({
 				plugins: [
 					// Using Flow plugin and not preset to run before class-properties and avoid generating strange property code
@@ -308,12 +308,12 @@ function createHtml(env) {
 		case "Desktop":
 			filenamePrefix = "desktop"
 	}
-	let imports = ["libs.js", "main-boot.js", `${filenamePrefix}.js`]
+	let imports = ["libs.js", `${filenamePrefix}.js`]
 	return Promise.all([
 		_writeFile(`./build/dist/${filenamePrefix}.js`, [
 			`window.whitelabelCustomizations = null`,
 			`window.env = ${JSON.stringify(env, null, 2)}`,
-			`System.import('app.js')`,
+			`System.import('./app.js')`,
 		].join("\n")),
 		LaunchHtml.renderHtml(imports, env).then((content) => _writeFile(`./build/dist/${filenamePrefix}.html`, content))
 	])

@@ -62,6 +62,7 @@ function _writeFile(targetFile, content) {
 async function prepareAssets(watch) {
 	let restUrl
 	await Promise.all([
+		await fs.emptyDirAsync("build/images"),
 		fs.copyAsync(path.join(__dirname, '/resources/favicon'), path.join(__dirname, '/build/images')),
 		fs.copyAsync(path.join(__dirname, '/resources/images/'), path.join(__dirname, '/build/images')),
 		fs.copyAsync(path.join(__dirname, '/libs'), path.join(__dirname, '/build/libs'))

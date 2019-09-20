@@ -1,6 +1,6 @@
 // @flow
 import {assertMainOrNodeBoot} from "../api/Env"
-import {asyncImport, downcast} from "../api/common/utils/Utils"
+import {downcast} from "../api/common/utils/Utils"
 import {client} from "./ClientDetector"
 import typeof en from "../translations/en"
 import type {TranslationKeyType} from "./TranslationKey"
@@ -52,6 +52,48 @@ export const languages: Language[] = [
 	{code: 'zh', textId: 'languageChineseSimplified_label'},
 	{code: 'zh_tw', textId: 'languageChineseTraditional_label'}
 ]
+
+const translationImportMap = {
+	'ar': () => import("../translations/ar.js"),
+	'bg': () => import("../translations/bg.js"),
+	'ca': () => import("../translations/ca.js"),
+	'cs': () => import("../translations/cs.js"),
+	'da': () => import("../translations/da.js"),
+	'de': () => import("../translations/de.js"),
+	'de_sie': () => import("../translations/de_sie.js"),
+	'el': () => import("../translations/el.js"),
+	'en': () => import("../translations/en.js"),
+	'es': () => import("../translations/es.js"),
+	'et': () => import("../translations/et.js"),
+	'fa_ir': () => import("../translations/fa_ir.js"),
+	'fi': () => import("../translations/fi.js"),
+	'fr': () => import("../translations/fr.js"),
+	'gl': () => import("../translations/gl.js"),
+	'hi': () => import("../translations/hi.js"),
+	'hr': () => import("../translations/hr.js"),
+	'hu': () => import("../translations/hu.js"),
+	'id': () => import("../translations/id.js"),
+	'it': () => import("../translations/it.js"),
+	'ja': () => import("../translations/ja.js"),
+	'lt': () => import("../translations/lt.js"),
+	'lv': () => import("../translations/lv.js"),
+	'nl': () => import("../translations/nl.js"),
+	'no': () => import("../translations/no.js"),
+	'pl': () => import("../translations/pl.js"),
+	'pt_br': () => import("../translations/pt_br.js"),
+	'pt_pt': () => import("../translations/pt_pt.js"),
+	'ro': () => import("../translations/ro.js"),
+	'ru': () => import("../translations/ru.js"),
+	'sk': () => import("../translations/sk.js"),
+	'sl': () => import("../translations/sl.js"),
+	'sr': () => import("../translations/sr.js"),
+	'sv': () => import("../translations/sv.js"),
+	'tr': () => import("../translations/tr.js"),
+	'uk': () => import("../translations/uk.js"),
+	'vi': () => import("../translations/vi.js"),
+	'zh': () => import("../translations/zh.js"),
+	'zh_tw': () => import("../translations/zh_tw.js"),
+}
 export const languageByCode = languages.reduce((acc, curr) => {
 	acc[curr.code] = curr
 	return acc
@@ -146,9 +188,9 @@ class LanguageViewModel {
 		if (this.code === lang.code) {
 			return Promise.resolve()
 		}
-		return import(`../translations/${lang.code}.js`)
-			.then(translations => {
-				this.translations = translations
+		return translationImportMap[lang.code]()
+			.then(translationsModule => {
+				this.translations = translationsModule.default
 				this.code = lang.code
 			})
 	}
@@ -353,11 +395,13 @@ export function _getSubstitutedLanguageCode(tag: string, restrictions: ?string[]
 			language = languages.find(l => l.code === 'zh_tw')
 		} else {
 			let basePart = getBasePart(code)
-			language = languages.find(l => getBasePart(l.code) === basePart && (restrictions == null || restrictions.indexOf(l.code) !== -1))
+			language = languages.find(l => getBasePart(l.code) === basePart && (restrictions == null || restrictions.indexOf(l.code)
+				!== -1))
 		}
 	}
 	if (language) {
-		if (language.code === 'de' && typeof whitelabelCustomizations === "object" && whitelabelCustomizations && whitelabelCustomizations.germanLanguageCode) {
+		if (language.code === 'de' && typeof whitelabelCustomizations === "object" && whitelabelCustomizations
+			&& whitelabelCustomizations.germanLanguageCode) {
 			return whitelabelCustomizations.germanLanguageCode
 		} else {
 			return language.code

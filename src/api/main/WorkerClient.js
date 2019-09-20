@@ -90,14 +90,7 @@ export class WorkerClient {
 
 	_initWorker() {
 		if (typeof Worker !== 'undefined') {
-			let worker = null
-			if (env.dist) {
-				worker = new Worker(System.getConfig().baseURL + "WorkerBootstrap.js")
-			} else {
-				// let url = System.normalizeSync(typeof module !== "undefined" ? module.id : __moduleName)
-				// let workerUrl = url.substring(0, url.lastIndexOf('/')) + '/../worker/WorkerBootstrap.js'
-				worker = new Worker("WorkerBootstrap.js")
-			}
+			const worker = new Worker("WorkerBootstrap.js")
 			this._queue = new Queue(worker)
 
 			// window.env.systemConfig.baseURL = System.getConfig().baseURL
