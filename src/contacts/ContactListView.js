@@ -5,7 +5,7 @@ import {load, loadAll} from "../api/main/Entity"
 import {ContactTypeRef} from "../api/entities/tutanota/Contact"
 import {ContactView} from "./ContactView"
 import {GENERATED_MAX_ID} from "../api/common/EntityFunctions"
-import {compareContacts, LazyContactListId, getContactListName} from "./ContactUtils"
+import {compareContactsByLastName, compareContacts, LazyContactListId, getContactListName} from "./ContactUtils"
 import {assertMainOrNode} from "../api/Env"
 import {lang} from "../misc/LanguageViewModel"
 import {NotFoundError} from "../api/common/error/RestError"
@@ -46,8 +46,11 @@ export class ContactListView {
 					// we return null if the entity does not exist
 				})
 			},
-			sortCompare: compareContacts,
-
+			sortCompare: (c1: Contact, c2: Contact) => {
+				return this.contactView._sortOrder === 'first_name'
+					? compareContacts(c1, c2)
+					: compareContactsByLastName(c1, c2)
+			},
 			elementSelected: (entities, elementClicked, selectionChanged, multiSelectionActive) => contactView.elementSelected(entities, elementClicked, selectionChanged, multiSelectionActive),
 			createVirtualRow: () => new ContactRow(),
 			showStatus: false,

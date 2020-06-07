@@ -31,7 +31,7 @@ import {theme} from "../gui/theme"
 import {BootIcons} from "../gui/base/icons/BootIcons"
 import {showProgressDialog} from "../gui/base/ProgressDialog"
 import {locator} from "../api/main/MainLocator"
-import {LazyContactListId} from "../contacts/ContactUtils"
+import {compareContacts, compareContactsByLastName, LazyContactListId} from "../contacts/ContactUtils"
 import {ContactMergeView} from "./ContactMergeView"
 import {getMergeableContacts, mergeContacts} from "./ContactMergeUtils"
 import {exportAsVCard} from "./VCardExporter"
@@ -46,6 +46,9 @@ import {FolderColumnView} from "../gui/base/FolderColumnView"
 
 assertMainOrNode()
 
+
+type SortOrder = 'first_name' | 'last_name'
+
 export class ContactView implements CurrentView {
 	listColumn: ViewColumn;
 	contactColumn: ViewColumn;
@@ -58,6 +61,7 @@ export class ContactView implements CurrentView {
 	oncreate: Function;
 	onremove: Function;
 	_throttledSetUrl: (string) => void;
+	_sortOrder: SortOrder = 'first_name'
 
 	constructor() {
 		let expander = this.createContactFoldersExpander()
@@ -218,8 +222,19 @@ export class ContactView implements CurrentView {
 
 	createFolderMoreButton() {
 		return createDropDownButton("more_label", () => Icons.More, () => this._vcardButtons().concat([
-			new Button("merge_action", () => this._mergeAction(), () => Icons.People).setType(ButtonType.Dropdown)
+			new Button("merge_action", () => this._mergeAction(), () => Icons.People).setType(ButtonType.Dropdown),
+			new Button(() => `Sort by ${this._sortOrder === 'first_name' ? 'last' : 'first'} name`, () => this._toggleSortOrder(), () => Icons.Wand).setType(ButtonType.Dropdown)
 		]), 250).setColors(ButtonColors.Nav)
+	}
+	_toggleSortOrder() {
+		const comparator = this._sortOrder === 'first_name'
+			? compareContactsByLastName
+			: compareContacts
+		this._sortOrder = this._sortOrder === 'first_name'
+			? 'last_name'
+			: 'first_name'
+		this._contactList.list._loadedEntities.sort(comparator)
+		this._contactList.list._reposition()
 	}
 
 	_vcardButtons(): Button[] {
